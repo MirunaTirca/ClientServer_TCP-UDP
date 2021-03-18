@@ -1,0 +1,51 @@
+helpers.h
+Structurile de date folosite sunt:
+
+Mesajele udp - structura msg_udp_format
+Informatiile continute: topic, tip_date si continut.
+
+Mesajele de la clienti la server - structura msg_client_to_server
+In functie de ce se citeste de la tastatura in subscribers.c, clientul
+poate da urmatoarele comenzi: exit, subscribe, unsubscribe (care trebuie
+trimise la server pentru a fi rezolvate).
+
+Mesajele de la server la clienti - structura msg_server_to_client
+Folosita pentru a trimite catre toti clientii activi abonati la un topic
+mesajele udp.
+
+Strucutura ce memoreaza un abonament la un topic: structura subscription
+
+Structura pentru a memora datele unui client: client
+Contine un char id, int sockfd, si vectorul de abonamente subscriptions*
+
+server.c
+
+Serverul deschide 2 socketi (unul TCP si unul UDP) si adaug cei 2 file
+descriptors in multimea read_fds pentru a asculta conexiuni.
+
+Daca primesc mesaje udp, acestea trebuie trimise mai departe clientilor
+activi sau stocate (pentru clientii inativi cu SF = 1 pe acel topic).
+Asa ca salvez mesajul din format udp in formatul msg_server_to_client, cu
+ip si port de pe socket.
+
+Daca am primit de la tastatura comanda "exit", serverul trebuie sa inchida
+toti clientii activi, trimitandu-le mesaj cu comanda exit si apoi inchid
+conexiunile.
+
+Daca nu am intrat pe niciuna din situatiile anterioare, inseamna ca primesc
+date pe unul din socketi de client tcp. Tipurile de comenzi receptionate sunt de
+exit, subscribe sau unsubscribe (trimise de clientii tcp spre server).
+
+subscriber.c
+
+Deschid socket tcp si conectez clientul la server.
+Primesc date de la tastatura (comenzile exit, subscribe sau unsubscribe pe care
+le transmit mai departe la server) sau date de la server, adica mesajele udp pe
+topic-urile la care clientul e abonat si le afisez in functie de tipul de date.
+Pentru mesajele primite de la server:se primesc mesaje udp care trebuie afisate.
+ 
+RULARE:
+./server <port>
+./subscriber <id_client> <ip> <port>
+
+
